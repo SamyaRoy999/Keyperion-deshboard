@@ -8,8 +8,6 @@ import UserStatsChart from "@/components/UserStatsChart";
 import { Users, Home, Shield, TrendingUp } from "lucide-react";
 import { useGetDashboardQuery } from "@/redux/apiSlices/deshboardApi/deshboardApiSlice";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
 const MONTHS = [
   { label: "January", value: 1 },
   { label: "February", value: 2 },
@@ -28,8 +26,6 @@ const MONTHS = [
 const currentYear = new Date().getFullYear();
 const YEARS = Array.from({ length: 5 }, (_, i) => currentYear - i);
 
-// ─── Component ────────────────────────────────────────────────────────────────
-
 export default function RootHome() {
   const [month, setMonth] = useState<number>(new Date().getMonth() + 1);
   const [year, setYear] = useState<number>(currentYear);
@@ -45,7 +41,6 @@ export default function RootHome() {
   );
 
   const data = response?.data;
-
   const fmt = (n: number | undefined) =>
     n !== undefined ? n.toLocaleString() : "—";
 
@@ -57,65 +52,6 @@ export default function RootHome() {
         description="Your overall dashboard overview. See the statistics, analytics and manage them."
       />
 
-      {/* Welcome + Filter Row */}
-      <div className="mb-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-semibold text-foreground mb-1">
-            Hello Abid!
-          </h2>
-          <p className="text-muted-foreground">
-            Track and manage your application from here.
-          </p>
-        </div>
-
-        {/* Month / Year filter */}
-        <div className="flex items-center gap-3">
-          {/* Month */}
-          <div className="flex flex-col gap-1">
-            <label
-              htmlFor="month-select"
-              className="text-xs font-medium text-muted-foreground"
-            >
-              Month
-            </label>
-            <select
-              id="month-select"
-              value={month}
-              onChange={(e) => setMonth(Number(e.target.value))}
-              className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer"
-            >
-              {MONTHS.map((m) => (
-                <option key={m.value} value={m.value}>
-                  {m.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Year */}
-          <div className="flex flex-col gap-1">
-            <label
-              htmlFor="year-select"
-              className="text-xs font-medium text-muted-foreground"
-            >
-              Year
-            </label>
-            <select
-              id="year-select"
-              value={year}
-              onChange={(e) => setYear(Number(e.target.value))}
-              className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer"
-            >
-              {YEARS.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
-
       {/* Error banner */}
       {isError && (
         <div className="mb-6 rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
@@ -123,32 +59,86 @@ export default function RootHome() {
         </div>
       )}
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-        <StatCard
-          icon={Users}
-          label="Total Tenants"
-          value={isLoading ? "…" : fmt(data?.totalTenants)}
-          bgColor="bg-slate-700"
-        />
-        <StatCard
-          icon={Home}
-          label="Total Properties"
-          value={isLoading ? "…" : fmt(data?.totalProperties)}
-          bgColor="bg-slate-700"
-        />
-        <StatCard
-          icon={Shield}
-          label="Total Managers"
-          value={isLoading ? "…" : fmt(data?.manager)}
-          bgColor="bg-slate-700"
-        />
-        <StatCard
-          icon={TrendingUp}
-          label="Total Earnings"
-          value={isLoading ? "…" : `$${fmt(data?.earnings)}`}
-          bgColor="bg-slate-700"
-        />
+      {/* Card Section — নতুন ডিজাইন */}
+      <div className="mb-8 flex flex-col items-center xl:items-end xl:flex-row gap-4 justify-between bg-[#F6F6F6] px-6 py-6 rounded-2xl shadow">
+        {/* Welcome + Filter */}
+        <div className="w-full xl:w-[35%] flex flex-col gap-4">
+          <div className="space-y-1">
+            <h2 className="font-semibold text-xl text-foreground">
+              Hello Abid!
+            </h2>
+            <p className="font-medium text-base text-[#535353]">
+              Track and manage your application from here.
+            </p>
+          </div>
+          {/* Month / Year filter */}
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col gap-1">
+              <label
+                htmlFor="month-select"
+                className="text-xs font-medium text-muted-foreground"
+              >
+                Month
+              </label>
+              <select
+                id="month-select"
+                value={month}
+                onChange={(e) => setMonth(Number(e.target.value))}
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer"
+              >
+                {MONTHS.map((m) => (
+                  <option key={m.value} value={m.value}>
+                    {m.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label
+                htmlFor="year-select"
+                className="text-xs font-medium text-muted-foreground"
+              >
+                Year
+              </label>
+              <select
+                id="year-select"
+                value={year}
+                onChange={(e) => setYear(Number(e.target.value))}
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer"
+              >
+                {YEARS.map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Stat Cards */}
+        <div className="flex flex-col xl:flex-row gap-2 w-full xl:w-[60%]">
+          <StatCard
+            icon={Users}
+            label="Total Tenants"
+            value={isLoading ? "…" : fmt(data?.totalTenants)}
+          />
+          <StatCard
+            icon={Home}
+            label="Total Properties"
+            value={isLoading ? "…" : fmt(data?.totalProperties)}
+          />
+          <StatCard
+            icon={Shield}
+            label="Total Managers"
+            value={isLoading ? "…" : fmt(data?.manager)}
+          />
+          <StatCard
+            icon={TrendingUp}
+            label="Total Earnings"
+            value={isLoading ? "…" : `$${fmt(data?.earnings)}`}
+          />
+        </div>
       </div>
 
       {/* Charts */}

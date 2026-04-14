@@ -27,13 +27,10 @@ export default function AboutUs() {
   });
   const [savingType, setSavingType] = useState<string | null>(null);
 
-  // GET
   const { data, isLoading } = useGetAboutUsQuery(undefined);
 
-  // Mutation
   const [updateAboutUs] = useUpdateAboutUsMutation();
 
-  // GET data আসলে editors populate করো
   useEffect(() => {
     if (data?.status && data?.data) {
       const updated: Record<string, string> = {

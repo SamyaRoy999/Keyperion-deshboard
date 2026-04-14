@@ -229,12 +229,72 @@ export const deshboardApiSlice = baseApi.injectEndpoints({
       },
       invalidatesTags: ["TermsCondition"],
     }),
+    // mainApi.ts এ add করো
+    getProfile: builder.query({
+      query: () => ({
+        url: `/profile`,
+        method: "GET",
+      }),
+      providesTags: ["Profile"],
+    }),
+
+    updateProfile: builder.mutation({
+      query: (data: { name: string }) => {
+        const formData = new FormData();
+        formData.append("name", data.name);
+        return {
+          url: `/settings/update/profile`,
+          method: "POST",
+          data: formData,
+          ContentType: "multipart/form-data",
+        };
+      },
+      invalidatesTags: ["Profile"],
+    }),
+
+    updateProfileImage: builder.mutation({
+      query: (formData: FormData) => ({
+        url: `/settings/update/profile/img`,
+        method: "POST",
+        data: formData,
+        ContentType: "multipart/form-data",
+      }),
+      invalidatesTags: ["Profile"],
+    }),
+    getTenantDetails: builder.query({
+      query: (id: number) => ({
+        url: `/dashboard/tenants-details/${id}`,
+        method: "GET",
+      }),
+      providesTags: ["tenant"],
+    }),
+    createPlan: builder.mutation({
+      query: (body: { price: string; interval: string }) => ({
+        url: `/dashboard/createPlan`,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ price: body.price, interval: body.interval }),
+      }),
+    }),
+    getPropertyDetails: builder.query({
+      query: (id: number) => ({
+        url: `/dashboard/property-details/${id}`,
+        method: "GET",
+      }),
+    }),
+    deleteProperty: builder.mutation({
+      query: (id: number) => ({
+        url: `/dashboard/property-delete/${id}`,
+        method: "DELETE",
+      }),
+    }),
   }),
   overrideExisting: true,
 });
 
 export const {
   useGetDashboardQuery,
+  useCreatePlanMutation,
   useGetLandlordsQuery,
   useGetLandlordDetailsQuery,
   useGetManagersQuery,
@@ -254,4 +314,10 @@ export const {
   useUpdateAboutUsMutation,
   useGetTermsConditionQuery,
   useUpdateTermsConditionMutation,
+  useGetProfileQuery,
+  useUpdateProfileImageMutation,
+  useUpdateProfileMutation,
+  useGetTenantDetailsQuery,
+  useGetPropertyDetailsQuery,
+  useDeletePropertyMutation,
 } = deshboardApiSlice;

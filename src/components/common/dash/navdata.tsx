@@ -48,10 +48,14 @@ export const adminLinks = [
         icon: "changePassword",
         label: "Change Password",
       },
-      { to: "/dashboard/settings/about-us", icon: "arrow", label: "About us" },
+      {
+        to: "/dashboard/settings/about-us",
+        icon: "aboutUs",
+        label: "About us",
+      },
       {
         to: "/dashboard/settings/terms",
-        icon: "arrow",
+        icon: "termsConditions",
         label: "Terms & Conditions",
       },
       {

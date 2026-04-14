@@ -7,4 +7,5 @@ export const tagTypesList = [
   "appointment",
   "faq",
   "AboutUs",
+  "Profile",
 ];

@@ -8,9 +8,11 @@ import Header from "@/components/common/dash/Header";
 import Image from "next/image";
 import FavIcon from "@/icon/favIcon";
 import { Pagination } from "@/components/reuseable/pagination";
+import { toast } from "sonner";
 import {
   useDeleteTenantMutation,
   useGetTenantsQuery,
+  useGetTenantDetailsQuery,
 } from "@/redux/apiSlices/deshboardApi/deshboardApiSlice";
 
 const isDefaultImg = (img: string) =>
@@ -41,13 +43,138 @@ function UserAvatar({ img, name }: { img: string; name: string }) {
   );
 }
 
+function TenantDetailsModal({
+  tenantId,
+  onClose,
+  onDelete,
+}: {
+  tenantId: number;
+  onClose: () => void;
+  onDelete: (tenant: any) => void;
+}) {
+  const { data, isLoading } = useGetTenantDetailsQuery(tenantId);
+  const tenant = data?.data;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-[#F6F6F6] rounded-2xl max-w-md w-full p-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
+          <div />
+          <h2 className="text-lg font-semibold">Tenant details</h2>
+          <button onClick={onClose} className="p-1 hover:bg-muted rounded">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {isLoading ? (
+          <div className="py-10 text-center text-sm text-gray-400">
+            Loading...
+          </div>
+        ) : !tenant ? (
+          <div className="py-10 text-center text-sm text-gray-400">
+            No data found.
+          </div>
+        ) : (
+          <>
+            {/* User info */}
+            <div className="flex justify-between p-3 rounded-xl bg-white items-center gap-4 mb-3">
+              <div className="flex items-center gap-3">
+                <UserAvatar
+                  img={tenant?.img ?? ""}
+                  name={tenant?.name ?? "?"}
+                />
+                <div>
+                  <h3 className="font-semibold">{tenant?.name}</h3>
+                  <p className="text-sm text-gray-500">{tenant?.email}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => onDelete(tenant)}
+                className="p-2 bg-red-50 hover:bg-red-100 rounded-xl transition-colors"
+              >
+                <Trash2 className="w-4 h-4 text-red-500" />
+              </button>
+            </div>
+
+            {/* Location */}
+            {tenant?.location && (
+              <div className="flex gap-3 items-center mb-3 bg-white p-4 rounded-xl">
+                <FavIcon name="location" />
+                <p className="text-sm text-gray-500">{tenant.location}</p>
+              </div>
+            )}
+
+            {/* Details Grid */}
+            <div className="grid grid-cols-2 gap-3">
+              {/* Property */}
+              <div className="bg-white p-4 rounded-xl flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                  <FavIcon name="property" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400 mb-0.5">Property</p>
+                  <p className="font-semibold text-sm">
+                    {tenant?.unit?.floor?.property?.name ?? "—"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Unit name */}
+              <div className="bg-white p-4 rounded-xl flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                  <FavIcon name="unit" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400 mb-0.5">Unit name</p>
+                  <p className="font-semibold text-sm">
+                    {tenant?.unit?.unit_name ?? "—"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Rent */}
+              <div className="bg-white p-4 rounded-xl flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                  <FavIcon name="rent" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400 mb-0.5">Rent</p>
+                  <p className="font-semibold text-sm">
+                    {tenant?.unit?.rent_amount
+                      ? `$ ${tenant.unit.rent_amount}`
+                      : "—"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Status */}
+              <div className="bg-white p-4 rounded-xl flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                  <FavIcon name="status" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400 mb-0.5">Status</p>
+                  <p className="font-semibold text-sm">
+                    {tenant?.has_payment_method ? "Paid" : "Unpaid"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Main Page ──────────────────────────────────────────────────────────────
 export default function TenantsPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
-  const [selectedTenant, setSelectedTenant] = useState<any>(null);
+  const [selectedTenantId, setSelectedTenantId] = useState<number | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<any>(null);
 
-  // API
   const { data: tenants, isLoading } = useGetTenantsQuery({ page, search });
   const [deleteTenant, { isLoading: isDeleting }] = useDeleteTenantMutation();
 
@@ -58,9 +185,15 @@ export default function TenantsPage() {
     if (!deleteConfirm) return;
     try {
       await deleteTenant(deleteConfirm.id).unwrap();
+      toast.success("Tenant deleted", {
+        description: "Tenant has been successfully deleted.",
+      });
       setDeleteConfirm(null);
-      setSelectedTenant(null);
+      setSelectedTenantId(null);
     } catch (err) {
+      toast.error("Delete failed", {
+        description: "Something went wrong. Please try again.",
+      });
       console.error("Delete failed:", err);
     }
   };
@@ -73,7 +206,7 @@ export default function TenantsPage() {
           description="You can manage all the tenants of your platform from here."
         />
 
-        {/* Search Bar */}
+        {/* Search */}
         <div className="relative mb-6 max-w-sm">
           <input
             type="text"
@@ -151,12 +284,12 @@ export default function TenantsPage() {
                       {tenant?.unit?.unit_name ?? "—"}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
-                      {tenant?.property_name ?? "—"}
+                      {tenant?.unit?.floor?.property?.name ?? "—"}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <button
-                          onClick={() => setSelectedTenant(tenant)}
+                          onClick={() => setSelectedTenantId(tenant.id)}
                           className="p-1.5 hover:bg-muted rounded transition-colors"
                         >
                           <Eye className="w-5 h-5 text-gray-500" />
@@ -185,88 +318,19 @@ export default function TenantsPage() {
           <Pagination onPageChange={(v: number) => setPage(v)} {...meta} />
         </div>
 
-        {/* ── Tenant Details Modal ─────────────────────────────── */}
-        {selectedTenant && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-[#F6F6F6] rounded-lg max-w-md w-full p-6 border border-border">
-              <div className="flex items-center justify-between mb-4">
-                <div />
-                <h2 className="text-lg font-semibold">Tenant details</h2>
-                <button
-                  onClick={() => setSelectedTenant(null)}
-                  className="p-1 hover:bg-muted rounded"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* User info */}
-              <div className="flex justify-between p-3 rounded-xl bg-white items-center gap-4 mb-4">
-                <div className="flex items-center gap-3">
-                  <UserAvatar
-                    img={selectedTenant?.img ?? ""}
-                    name={selectedTenant?.name ?? "?"}
-                  />
-                  <div>
-                    <h3 className="font-semibold">{selectedTenant?.name}</h3>
-                    <p className="text-sm text-gray-500">
-                      {selectedTenant?.email}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => {
-                    setDeleteConfirm(selectedTenant);
-                    setSelectedTenant(null);
-                  }}
-                  className="p-1.5 hover:bg-muted rounded"
-                >
-                  <Trash2 className="w-4 h-4 text-red-500" />
-                </button>
-              </div>
-
-              {/* Location */}
-              {selectedTenant?.location && (
-                <div className="flex gap-3 items-center mb-4 bg-white p-4 rounded-2xl">
-                  <FavIcon name="location" />
-                  <p className="text-sm text-gray-500">
-                    {selectedTenant.location}
-                  </p>
-                </div>
-              )}
-
-              {/* Details Grid */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white p-3 rounded-2xl">
-                  <p className="text-xs text-gray-400 mb-1">Property</p>
-                  <p className="font-medium text-sm">
-                    {selectedTenant?.property_name ?? "—"}
-                  </p>
-                </div>
-                <div className="bg-white p-3 rounded-2xl">
-                  <p className="text-xs text-gray-400 mb-1">Unit name</p>
-                  <p className="font-medium text-sm">
-                    {selectedTenant?.property_info ?? "—"}
-                  </p>
-                </div>
-                <div className="bg-white p-3 rounded-2xl">
-                  <p className="text-xs text-gray-400 mb-1">Role</p>
-                  <p className="font-medium text-sm capitalize">
-                    {selectedTenant?.role ?? "—"}
-                  </p>
-                </div>
-                <div className="bg-white p-3 rounded-2xl">
-                  <p className="text-xs text-gray-400 mb-1">Verified</p>
-                  <p className="font-medium text-sm">
-                    {selectedTenant?.is_verified ? "✅ Yes" : "❌ No"}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* Tenant Details Modal */}
+        {selectedTenantId && (
+          <TenantDetailsModal
+            tenantId={selectedTenantId}
+            onClose={() => setSelectedTenantId(null)}
+            onDelete={(tenant) => {
+              setDeleteConfirm(tenant);
+              setSelectedTenantId(null);
+            }}
+          />
         )}
 
-        {/* ── Delete Confirmation Modal ────────────────────────── */}
+        {/* Delete Confirmation Modal */}
         {deleteConfirm && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
             <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center">
