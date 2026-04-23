@@ -3,12 +3,14 @@
 import Header from "@/components/common/dash/Header";
 import { Pagination } from "@/components/reuseable/pagination";
 import {
+  useDeleteTenantMutation,
   useGetManagersQuery,
   useGetManagerUnitsQuery,
 } from "@/redux/apiSlices/deshboardApi/deshboardApiSlice";
 import { Eye, Trash2, X } from "lucide-react";
 import Image from "next/image";
 import React, { useState } from "react";
+import { toast } from "sonner";
 
 interface Manager {
   id: number;
@@ -35,9 +37,15 @@ export default function ManagersPage(): React.ReactElement {
   const [managerToDelete, setManagerToDelete] = useState<Manager | null>(null);
 
   // ── API Calls ──────────────────────────────────────────────────────────────
-  const { data: managers, isLoading } = useGetManagersQuery({ page, search });
+  const {
+    data: managers,
+    isLoading,
+    refetch,
+  } = useGetManagersQuery({ page, search });
+
   const { data: managerDetail, isLoading: isDetailLoading } =
     useGetManagerUnitsQuery(selectedManagerId);
+  const [deleteManager, { isLoading: isDeleting }] = useDeleteTenantMutation();
 
   const managerList: Manager[] = managers?.data ?? [];
   const meta = managers?.meta;
@@ -56,6 +64,22 @@ export default function ManagersPage(): React.ReactElement {
       .toUpperCase();
 
   const isDefaultImg = (img: string) => img?.includes("default.png");
+
+  const handleDelete = async () => {
+    if (!managerToDelete) return;
+    try {
+      await deleteManager(managerToDelete.id).unwrap();
+      toast.success("Manager deleted", {
+        description: `${managerToDelete.name} has been removed successfully.`,
+      });
+      setManagerToDelete(null);
+      refetch();
+    } catch (error: any) {
+      toast.error("Delete failed", {
+        description: error?.data?.message || "Something went wrong.",
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen p-4 bg-gray-50/30">
@@ -122,10 +146,8 @@ export default function ManagersPage(): React.ReactElement {
               ) : (
                 managerList.map((manager) => (
                   <tr key={manager.id} className="hover:bg-gray-50/50">
-                    {/* Name with Avatar */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        {/* Avatar */}
                         {!isDefaultImg(manager.img) ? (
                           <div className="relative w-9 h-9 rounded-full overflow-hidden flex-shrink-0">
                             <Image
@@ -147,7 +169,6 @@ export default function ManagersPage(): React.ReactElement {
                         </span>
                       </div>
                     </td>
-
                     <td className="px-6 py-4 text-sm text-gray-500">
                       {manager.email}
                     </td>
@@ -185,7 +206,6 @@ export default function ManagersPage(): React.ReactElement {
       {selectedManagerId && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-2xl overflow-hidden relative">
-            {/* Modal Header */}
             <div className="flex justify-between items-center p-4 border-b">
               <h2 className="text-lg font-semibold text-center w-full">
                 Manager details
@@ -205,10 +225,8 @@ export default function ManagersPage(): React.ReactElement {
                 </div>
               ) : (
                 <>
-                  {/* Manager Header Info */}
                   <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-4">
-                      {/* Avatar */}
                       {managerDetail?.user?.img &&
                       !isDefaultImg(managerDetail.user.img) ? (
                         <div className="relative w-14 h-14 rounded-full overflow-hidden">
@@ -240,7 +258,6 @@ export default function ManagersPage(): React.ReactElement {
                       </div>
                     </div>
 
-                    {/* Delete from modal */}
                     <button
                       onClick={() => {
                         if (selectedManager)
@@ -253,7 +270,6 @@ export default function ManagersPage(): React.ReactElement {
                     </button>
                   </div>
 
-                  {/* Stats */}
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div className="bg-gray-50 p-4 rounded-xl">
                       <p className="text-xs text-gray-400 uppercase">
@@ -280,7 +296,6 @@ export default function ManagersPage(): React.ReactElement {
                     </div>
                   </div>
 
-                  {/* Property Name */}
                   <div className="bg-gray-50 p-4 rounded-xl mb-4">
                     <div className="flex items-center gap-2 mb-1">
                       <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -295,7 +310,6 @@ export default function ManagersPage(): React.ReactElement {
                     </p>
                   </div>
 
-                  {/* Unit List */}
                   <div className="space-y-2">
                     {managerDetail?.units?.length === 0 ? (
                       <p className="text-center text-sm text-gray-400 py-4">
@@ -346,18 +360,17 @@ export default function ManagersPage(): React.ReactElement {
             <div className="flex gap-4">
               <button
                 onClick={() => setManagerToDelete(null)}
-                className="flex-1 py-3 px-4 border border-gray-200 rounded-xl font-semibold text-gray-600 hover:bg-gray-50"
+                disabled={isDeleting}
+                className="flex-1 py-3 px-4 border border-gray-200 rounded-xl font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
-                onClick={() => {
-                  console.log("Deleted:", managerToDelete.id);
-                  setManagerToDelete(null);
-                }}
-                className="flex-1 py-3 px-4 bg-red-500 rounded-xl font-semibold text-white hover:bg-red-600"
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="flex-1 py-3 px-4 bg-red-500 rounded-xl font-semibold text-white hover:bg-red-600 disabled:opacity-70"
               >
-                Delete
+                {isDeleting ? "Deleting..." : "Delete"}
               </button>
             </div>
           </div>

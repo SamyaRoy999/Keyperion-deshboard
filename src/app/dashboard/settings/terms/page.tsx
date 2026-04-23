@@ -1,4 +1,5 @@
 "use client";
+import Header from "@/components/common/dash/Header";
 import Heading from "@/components/reuseable/heading";
 import TextEditor from "@/components/reuseable/text-editor";
 import {
@@ -53,6 +54,10 @@ export default function Terms() {
 
   return (
     <div className="wapper">
+      <Header
+        title="Settings"
+        description="You can manage all the settings of your platform from here."
+      />
       <div className="card">
         <Heading
           title="Terms & Conditions"

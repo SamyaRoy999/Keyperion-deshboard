@@ -60,7 +60,7 @@ export const deshboardApiSlice = baseApi.injectEndpoints({
         params: arg,
       }),
       transformResponse: (res: any) => buildResponse(res),
-      providesTags: ["maintenance"],
+      providesTags: ["maintenance", "tenant"],
     }),
     // ── Appointments list ────────────────────────────────────────────────────────
     getAppointments: builder.query({
@@ -100,7 +100,6 @@ export const deshboardApiSlice = baseApi.injectEndpoints({
     }),
 
     // ── FAQ Mutations ──────────────────────────────────────────────────────────
-
     addFaq: builder.mutation({
       query: (data: { question: string; answer: string }) => {
         const formData = new FormData();
@@ -109,8 +108,7 @@ export const deshboardApiSlice = baseApi.injectEndpoints({
         return {
           url: "/settings/faq",
           method: "POST",
-          body: formData,
-          formData: true,
+          data: formData, // body → data
         };
       },
       invalidatesTags: ["faq"],
@@ -132,13 +130,11 @@ export const deshboardApiSlice = baseApi.injectEndpoints({
         return {
           url: `/settings/faq/${id}`,
           method: "POST",
-          body: formData,
-          formData: true,
+          data: formData, // body → data
         };
       },
       invalidatesTags: ["faq"],
     }),
-
     deleteFaq: builder.mutation({
       query: (id: number) => ({
         url: `/settings/faq/${id}`,
@@ -229,14 +225,6 @@ export const deshboardApiSlice = baseApi.injectEndpoints({
       },
       invalidatesTags: ["TermsCondition"],
     }),
-    // mainApi.ts এ add করো
-    getProfile: builder.query({
-      query: () => ({
-        url: `/profile`,
-        method: "GET",
-      }),
-      providesTags: ["Profile"],
-    }),
 
     updateProfile: builder.mutation({
       query: (data: { name: string }) => {
@@ -288,6 +276,29 @@ export const deshboardApiSlice = baseApi.injectEndpoints({
         method: "DELETE",
       }),
     }),
+    getProfile: builder.query({
+      query: () => ({
+        url: `/profile`,
+        method: "GET",
+      }),
+    }),
+    replySupport: builder.mutation({
+      query: ({ id, reply }: { id: number; reply: string }) => {
+        const formData = new FormData();
+        formData.append("reply", reply);
+        return {
+          url: `/settings/support/reply/${id}`,
+          method: "POST",
+          data: formData,
+        };
+      },
+    }),
+    logout: builder.mutation({
+      query: () => ({
+        url: "/logout",
+        method: "POST",
+      }),
+    }),
   }),
   overrideExisting: true,
 });
@@ -320,4 +331,6 @@ export const {
   useGetTenantDetailsQuery,
   useGetPropertyDetailsQuery,
   useDeletePropertyMutation,
+  useReplySupportMutation,
+  useLogoutMutation,
 } = deshboardApiSlice;

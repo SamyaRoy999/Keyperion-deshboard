@@ -234,7 +234,7 @@ export default function AppointmentsPage(): React.ReactElement {
 
                         {/* Property */}
                         <td className="px-6 py-4 text-sm text-gray-500">
-                          {item?.property_name ?? "—"}
+                          {item?.property_name ?? "N/A"}
                         </td>
 
                         {/* Status */}

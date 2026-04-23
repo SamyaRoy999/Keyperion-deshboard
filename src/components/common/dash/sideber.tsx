@@ -5,6 +5,9 @@ import { adminLinks } from "./navdata";
 import Avatars from "@/components/reuseable/avater";
 import FavIcon from "@/icon/favIcon";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useLogoutMutation } from "@/redux/apiSlices/deshboardApi/deshboardApiSlice";
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -13,6 +16,23 @@ interface SidebarProps {
 
 export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
   const links = adminLinks;
+  const router = useRouter();
+  const [logout, { isLoading: isLoggingOut }] = useLogoutMutation();
+
+  const handleLogout = async () => {
+    try {
+      await logout(undefined).unwrap();
+      toast.success("Logged out", {
+        description: "You have been logged out successfully",
+      });
+      router.push("/"); // ← এখানে
+    } catch (err: any) {
+      toast.error("Failed", {
+        description: err?.data?.message || "Something went wrong",
+      });
+    }
+  };
+
   return (
     <div className="flex">
       {/* Overlay */}
@@ -24,7 +44,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
       )}
       {/* Sidebar */}
       <aside
-        className={`absolute left-0 top-0 z-20 bg-reds flex h-screen  transition-transform transform duration-300 bg-[#FFFFFF] ease-linear flex-col overflow-y-hidden  text-white w-[240px] lg:static lg:translate-x-0 ${
+        className={`absolute left-0 top-0 z-20 bg-reds flex h-screen transition-transform transform duration-300 bg-[#FFFFFF] ease-linear flex-col overflow-y-hidden text-white w-[240px] lg:static lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -52,7 +72,13 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                 />
                 Elena
               </div>
-              <FavIcon className="size-5" name="signout" />
+              <button
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+                className="disabled:opacity-50"
+              >
+                <FavIcon className="size-5" name="signout" />
+              </button>
             </div>
           </div>
         </div>

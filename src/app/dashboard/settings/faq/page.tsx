@@ -10,6 +10,7 @@ import {
   useGetFaqsQuery,
   useUpdateFaqMutation,
 } from "@/redux/apiSlices/deshboardApi/deshboardApiSlice";
+import { toast } from "sonner";
 
 interface FAQItem {
   id: number;
@@ -154,9 +155,14 @@ const FAQ = () => {
   const handleAdd = async (data: { question: string; answer: string }) => {
     try {
       await addFaq(data).unwrap();
+      toast.success("FAQ Added", {
+        description: "FAQ has been added successfully",
+      });
       setShowAddModal(false);
-    } catch (err) {
-      console.error("Add FAQ failed:", err);
+    } catch (err: any) {
+      toast.error("Failed", {
+        description: err?.data?.message || "Something went wrong",
+      });
     }
   };
 
@@ -164,9 +170,14 @@ const FAQ = () => {
     if (!editItem) return;
     try {
       await updateFaq({ id: editItem.id, ...data }).unwrap();
+      toast.success("FAQ Updated", {
+        description: "FAQ has been updated successfully",
+      });
       setEditItem(null);
-    } catch (err) {
-      console.error("Update FAQ failed:", err);
+    } catch (err: any) {
+      toast.error("Failed", {
+        description: err?.data?.message || "Something went wrong",
+      });
     }
   };
 
@@ -174,9 +185,14 @@ const FAQ = () => {
     if (!deleteItem) return;
     try {
       await deleteFaq(deleteItem.id).unwrap();
+      toast.success("FAQ Deleted", {
+        description: "FAQ has been deleted successfully",
+      });
       setDeleteItem(null);
-    } catch (err) {
-      console.error("Delete FAQ failed:", err);
+    } catch (err: any) {
+      toast.error("Failed", {
+        description: err?.data?.message || "Something went wrong",
+      });
     }
   };
 

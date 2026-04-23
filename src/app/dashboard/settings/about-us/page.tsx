@@ -1,4 +1,5 @@
 "use client";
+import Header from "@/components/common/dash/Header";
 import TextEditor from "@/components/reuseable/text-editor";
 import {
   useGetAboutUsQuery,
@@ -83,6 +84,10 @@ export default function AboutUs() {
 
   return (
     <div className="wapper">
+      <Header
+        title="Settings"
+        description="You can manage all the settings of your platform from here."
+      />
       <div className="card">
         {sections.map(({ label, type }) => (
           <div key={type} className="pt-10 pb-5">

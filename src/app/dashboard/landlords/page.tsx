@@ -90,6 +90,7 @@ function PropertyDetailsModal({
   };
 
   // Flatten all units from all floors
+
   const allUnits =
     propertyDetails?.data?.floors?.flatMap((floor: any) => floor.units) ?? [];
 

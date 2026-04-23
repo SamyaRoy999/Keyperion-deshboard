@@ -2,15 +2,15 @@
 
 import React, { useState } from "react";
 import { Search, Eye, Trash2, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import Header from "@/components/common/dash/Header";
-
 import Image from "next/image";
 import {
   useDeleteSupportMutation,
   useGetSupportsQuery,
+  useReplySupportMutation,
 } from "@/redux/apiSlices/deshboardApi/deshboardApiSlice";
 import { Pagination } from "@/components/reuseable/pagination";
+import { toast } from "sonner";
 
 const isDefaultImg = (img: string) =>
   !img || img.includes("default.png") || img.includes("default.jpg");
@@ -54,6 +54,7 @@ export default function SupportPage() {
   // API
   const { data: supports, isLoading } = useGetSupportsQuery({ page, search });
   const [deleteSupport, { isLoading: isDeleting }] = useDeleteSupportMutation();
+  const [replySupport, { isLoading: isReplying }] = useReplySupportMutation();
 
   const list = supports?.data ?? [];
   const meta = supports?.meta;
@@ -74,14 +75,36 @@ export default function SupportPage() {
     setShowDeleteModal(true);
   };
 
+  const handleSendReply = async () => {
+    if (!selectedItem || !replyText.trim()) return;
+    try {
+      await replySupport({ id: selectedItem.id, reply: replyText }).unwrap();
+      toast.success("Reply Sent", {
+        description: "Your reply has been sent successfully",
+      });
+      setShowReplyModal(false);
+      setReplyText("");
+      setSelectedItem(null);
+    } catch (err: any) {
+      toast.error("Failed", {
+        description: err?.data?.message || "Something went wrong",
+      });
+    }
+  };
+
   const handleConfirmDelete = async () => {
     if (!selectedItem) return;
     try {
       await deleteSupport(selectedItem.id).unwrap();
+      toast.success("Deleted", {
+        description: "Support message deleted successfully",
+      });
       setShowDeleteModal(false);
       setSelectedItem(null);
-    } catch (err) {
-      console.error("Delete failed:", err);
+    } catch (err: any) {
+      toast.error("Failed", {
+        description: err?.data?.message || "Something went wrong",
+      });
     }
   };
 
@@ -231,7 +254,7 @@ export default function SupportPage() {
             </div>
 
             <div className="p-6">
-              {/* User info + delete button */}
+              {/* User info + action buttons */}
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <UserAvatar
@@ -312,19 +335,17 @@ export default function SupportPage() {
               <div className="flex gap-3 mt-4">
                 <button
                   onClick={() => setShowReplyModal(false)}
-                  className="flex-1 py-3 px-4 border border-gray-200 rounded-xl font-semibold text-gray-600 hover:bg-gray-50"
+                  disabled={isReplying}
+                  className="flex-1 py-3 px-4 border border-gray-200 rounded-xl font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-60"
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={() => {
-                    // TODO: reply API call
-                    console.log("Reply:", replyText);
-                    setShowReplyModal(false);
-                  }}
-                  className="flex-1 py-3 px-4 bg-foreground text-background rounded-xl font-semibold hover:opacity-90"
+                  onClick={handleSendReply}
+                  disabled={isReplying || !replyText.trim()}
+                  className="flex-1 py-3 px-4 bg-foreground text-background rounded-xl font-semibold hover:opacity-90 disabled:opacity-60"
                 >
-                  Send reply
+                  {isReplying ? "Sending..." : "Send reply"}
                 </button>
               </div>
             </div>
