@@ -24,7 +24,7 @@ export default function VerifyOtp() {
   const handleSubmit = async (values: FieldValues) => {
     try {
       const res = await forgotPassword({ email: values.email }).unwrap();
-      console.log(res);
+      console.log(res, "otp..........");
 
       toast.success("OTP Sent", {
         description: "Please check your email for the OTP",

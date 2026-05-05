@@ -316,7 +316,7 @@ function LandlordDetailsModal({
                           Expiry date
                         </p>
                         <p className="text-[13px] font-bold">
-                          {formatDate(details?.subscriptions?.ends_at)}
+                          {formatDate(details?.subscriptions?.end_date)}
                         </p>
                       </div>
                     </div>
@@ -468,7 +468,7 @@ export default function LandlordsPage() {
     if (!planPrice) return;
     try {
       await createPlan({
-        price: Number(planPrice),
+        price: planPrice,
         interval: planInterval,
       }).unwrap();
       toast.success("Plan updated", {
