@@ -256,13 +256,20 @@ export const deshboardApiSlice = baseApi.injectEndpoints({
       }),
       providesTags: ["tenant"],
     }),
+
     createPlan: builder.mutation({
-      query: (body: { price: string; interval: string }) => ({
-        url: `/dashboard/createPlan`,
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ price: body.price, interval: body.interval }),
-      }),
+      query: (body: { price: string; interval: string }) => {
+        const formData = new FormData();
+        formData.append("price", body.price);
+        formData.append("interval", body.interval);
+
+        return {
+          url: `/dashboard/createPlan`,
+          method: "POST",
+          data: formData,
+          ContentType: undefined,
+        };
+      },
     }),
     getPropertyDetails: builder.query({
       query: (id: number) => ({
