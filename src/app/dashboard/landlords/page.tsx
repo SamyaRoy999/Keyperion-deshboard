@@ -466,14 +466,17 @@ export default function LandlordsPage() {
 
   const handleCreatePlan = async () => {
     if (!planPrice) return;
+
     try {
       await createPlan({
         price: planPrice,
         interval: planInterval,
       }).unwrap();
+
       toast.success("Plan updated", {
         description: "Subscription price has been updated successfully.",
       });
+
       setIsSubscriptionModalOpen(false);
       setPlanPrice("");
       setPlanInterval("month");
@@ -483,7 +486,6 @@ export default function LandlordsPage() {
       });
     }
   };
-
   return (
     <Suspense>
       <div className="min-h-screen p-8">

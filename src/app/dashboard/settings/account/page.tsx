@@ -26,7 +26,6 @@ const AccountSettings = () => {
     }
   }, [profileData]);
 
-  // সরাসরি API data অথবা local preview
   const displayImage = localPreview || profileData?.data?.img || null;
 
   const handleImageClick = () => {

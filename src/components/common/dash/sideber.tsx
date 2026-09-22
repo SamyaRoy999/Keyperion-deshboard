@@ -1,13 +1,14 @@
 "use client";
-import React from "react";
 import NavItem from "./navitem";
 import { adminLinks } from "./navdata";
-import Avatars from "@/components/reuseable/avater";
 import FavIcon from "@/icon/favIcon";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useLogoutMutation } from "@/redux/apiSlices/deshboardApi/deshboardApiSlice";
+import {
+  useGetProfileQuery,
+  useLogoutMutation,
+} from "@/redux/apiSlices/deshboardApi/deshboardApiSlice";
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -18,6 +19,8 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
   const links = adminLinks;
   const router = useRouter();
   const [logout, { isLoading: isLoggingOut }] = useLogoutMutation();
+  const { data: profileData, isLoading } = useGetProfileQuery(undefined);
+  console.log(profileData);
 
   const handleLogout = async () => {
     try {
@@ -25,7 +28,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
       toast.success("Logged out", {
         description: "You have been logged out successfully",
       });
-      router.push("/"); // ← এখানে
+      router.push("/");
     } catch (err: any) {
       toast.error("Failed", {
         description: err?.data?.message || "Something went wrong",
@@ -61,16 +64,16 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
             <nav>
               <NavItem item={links} />
             </nav>
-            <div className="mx-2 mt-2 mb-6 flex px-2 py-1 rounded-md items-center justify-between bg-[#CDD9DA]">
+            <div
+              onClick={handleLogout}
+              className="mx-2 mt-2 mb-6 flex px-2 py-1 rounded-md items-center justify-between bg-black/70"
+            >
               <div className="flex items-center gap-2">
-                <Avatars
-                  src=""
-                  fallback="E"
-                  className="size-10"
-                  fallbackStyle="fallbackStyle"
-                  alt="img"
+                <img
+                  src={profileData?.data?.img}
+                  className="w-10 h-10 object-cover rounded-full "
                 />
-                Elena
+                {profileData?.data?.name}
               </div>
               <button
                 onClick={handleLogout}
